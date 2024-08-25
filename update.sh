@@ -1,37 +1,47 @@
-# !/bin/bash
+#!/bin/bash
 
-# 1. Download der Seite
-curl -o page.html https://www.minecraft.net/en-us/download/server/bedrock
+# Check if a version was passed as a parameter
+if [ -z "$1" ]; then
+    # No version provided, download the page and determine the version
+    echo "No version provided, determining version from the website..."
+    curl -o page.html https://www.minecraft.net/en-us/download/server/bedrock
 
-# 2. Extrahieren des Links für die ZIP-Datei
-zip_url=$(grep -oP 'https://minecraft.azureedge.net/bin-linux/bedrock-server-[0-9\.]+\.zip' page.html | head -1)
+    # Extract the link for the ZIP file
+    zip_url=$(grep -oP 'https://minecraft.azureedge.net/bin-linux/bedrock-server-[0-9\.]+\.zip' page.html | head -1)
 
-if [ -z "$zip_url" ]; then
-    echo "Kein Link zur ZIP-Datei gefunden."
-    exit 1
+    if [ -z "$zip_url" ]; then
+        echo "No ZIP file link found."
+        exit 1
+    fi
+
+    echo "Found ZIP link: $zip_url"
+else
+    # Version was provided, construct the download link
+    version="$1"
+    zip_url="https://minecraft.azureedge.net/bin-linux/bedrock-server-${version}.zip"
+    echo "Using provided version: $version"
+    echo "ZIP link: $zip_url"
 fi
 
-echo "Gefundener ZIP-Link: $zip_url"
-
-# 3. Download der ZIP-Datei
+# 3. Download the ZIP file
 curl -o bedrock-server.zip "$zip_url"
 
-# 4. Extrahieren der ZIP-Datei in einen eigenen Ordner
+# 4. Extract the ZIP file into a dedicated folder
 mkdir bedrock-server
 unzip -o bedrock-server.zip -d bedrock-server
 
-# 5. Kopieren der Inhalte in den aktuellen Ordner, bestimmte Dateien nicht überschreiben
+# 5. Copy the contents to the current directory, do not overwrite certain files
 for file in bedrock-server/*; do
     filename=$(basename "$file")
     if [[ "$filename" != "permissions.json" && "$filename" != "server.properties" && "$filename" != "allowlist.json" ]]; then
        cp -r "$file" .
     else
-       echo "$filename wurde nicht überschrieben."
+       echo "$filename was not overwritten."
     fi
 done
 
-# Bereinigung
+# Cleanup
 rm -r bedrock-server
 rm bedrock-server.zip
 
-echo "Vorgang abgeschlossen."
+echo "Update completed."
