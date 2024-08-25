@@ -1,24 +1,24 @@
 #!/bin/bash
 
-# Pfade anpassen
-WORLDS_DIR="/pfad/zu/worlds"
-BACKUP_DIR="/pfad/zu/backups"
+# Paths relative to the directory where the script is executed
+WORLDS_DIR="./worlds"
+BACKUP_DIR="./backups"
 
-# Sicherstellen, dass das Backup-Verzeichnis existiert
+# Ensure the backup directory exists
 mkdir -p "$BACKUP_DIR"
 
-# Zeitstempel im Format Jahr-Monat-Tag_Stunde-Minute-Sekunde
+# Timestamp in the format Year-Month-Day_Hour-Minute-Second
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 
-# Durch alle Welten im worlds-Verzeichnis iterieren
+# Iterate through all worlds in the worlds directory
 for WORLD in "$WORLDS_DIR"/*; do
   if [ -d "$WORLD" ]; then
     WORLD_NAME=$(basename "$WORLD")
     BACKUP_FILE="$BACKUP_DIR/${WORLD_NAME}_backup_$TIMESTAMP.tar.gz"
 
-    # Welt als tar.gz sichern
+    # Create a tar.gz backup of the world
     tar -czf "$BACKUP_FILE" -C "$WORLDS_DIR" "$WORLD_NAME"
 
-    echo "Sicherung für $WORLD_NAME erstellt: $BACKUP_FILE"
+    echo "Backup created for $WORLD_NAME: $BACKUP_FILE"
   fi
 done
